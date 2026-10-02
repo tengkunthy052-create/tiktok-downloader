@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Video Downloader - Full HD No Watermark</title>
+  <meta name="description" content="Download TikTok videos in Full HD (1080p) without watermark. Fast, free, and supports MP3 audio extraction and batch downloads.">
+  
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="glow-sphere glow-1"></div>
+  <div class="glow-sphere glow-2"></div>
+  <div class="glow-sphere glow-3"></div>
+
+  <div class="app-container">
+    <!-- Navigation / Header -->
+    <header class="main-header">
+      <div class="logo-group">
+        <div class="logo-icon-wrap">
+          <img src="favicon.svg" alt="App Logo" class="app-logo-img">
+        </div>
+        <div class="logo-text">
+          <h1>TikTok<span>HD</span></h1>
+          <p>No Watermark Ultra-Fast Downloader</p>
+        </div>
+      </div>
+
+      <div class="header-badges">
+        <button type="button" class="badge badge-vip-trigger" id="btn-header-vip">
+          <i class="fa-solid fa-crown"></i> 4K VIP: <strong>$0.50</strong>
+        </button>
+        <span class="badge badge-pulse"><i class="fa-solid fa-sparkles"></i> 1080p Full HD</span>
+        <span class="badge"><i class="fa-solid fa-bolt"></i> Ultra Fast</span>
+      </div>
+    </header>
+
+    <!-- Mode Selector Tabs -->
+    <div class="tab-switcher">
+      <button class="tab-btn active" data-tab="single" id="tab-single-btn">
+        <i class="fa-solid fa-video"></i> Singles
+      </button>
+      <button class="tab-btn" data-tab="profile" id="tab-profile-btn">
+        <i class="fa-solid fa-user-check"></i> Profile Videos
+      </button>
+      <button class="tab-btn" data-tab="batch" id="tab-batch-btn">
+        <i class="fa-solid fa-list-check"></i> Playlist & Batch
+      </button>
+      <button class="tab-btn" data-tab="history" id="tab-history-btn">
+        <i class="fa-solid fa-clock-rotate-left"></i> History (<span id="history-count">0</span>)
+      </button>
+    </div>
+
+    <!-- MAIN CONTENT: Single Video Tab -->
+    <main class="tab-content active" id="tab-single">
+      <!-- Input Search Section -->
+      <section class="search-section">
+        <div class="input-card">
+          <div class="input-wrapper">
+            <i class="fa-solid fa-link input-icon"></i>
+            <input 
+              type="text" 
+              id="tiktok-url-input" 
+              placeholder="Paste TikTok link here (e.g. https://www.tiktok.com/@... or vt.tiktok.com/...)" 
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button type="button" class="btn-paste" id="btn-paste" title="Paste from clipboard">
+              <i class="fa-regular fa-paste"></i> <span>Paste</span>
+            </button>
+            <button type="button" class="btn-clear" id="btn-clear" title="Clear input" style="display: none;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="btn-primary" id="btn-fetch">
+            <span class="btn-text"><i class="fa-solid fa-download"></i> Get Video</span>
+            <span class="btn-spinner" style="display: none;"><i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing...</span>
+          </button>
+        </div>
+
+        <div class="quick-examples">
+          <span class="label">Quick try:</span>
+          <button class="sample-link" data-url="https://www.tiktok.com/@zachking/video/6768504823336815877">Zach King Magic (HD)</button>
+          <button class="sample-link" data-url="https://vt.tiktok.com/ZS27Yv5Hq/">Short Link (vt.tiktok)</button>
+        </div>
+
+        <!-- Error Notification Banner -->
+        <div class="error-banner" id="error-banner" style="display: none;">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="error-message">Error fetching TikTok data</span>
+          <button class="error-close" id="error-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </section>
+
+      <!-- Video Result Showcase Card -->
+      <section class="result-section" id="result-section" style="display: none;">
+        <div class="result-card">
+          <!-- Left Column: Video / Media Preview -->
+          <div class="result-media-col">
+            <div class="media-container" id="media-container">
+              <video id="preview-video" controls playsinline preload="metadata" poster=""></video>
+              <div class="photo-slider" id="photo-slider" style="display: none;"></div>
+            </div>
+
+            <div class="audio-player-bar" id="audio-preview-bar">
+              <div class="audio-meta">
+                <i class="fa-solid fa-music"></i>
+                <div class="audio-text">
+                  <span class="audio-title" id="preview-audio-title">Original Sound</span>
+                  <span class="audio-author" id="preview-audio-author">Author</span>
+                </div>
+              </div>
+              <audio id="preview-audio" controls preload="none"></audio>
+            </div>
+          </div>
+
+          <!-- Right Column: Info & Download Actions -->
+          <div class="result-info-col">
+            <!-- Author Card Header -->
+            <div class="author-bar">
+              <img src="" alt="Avatar" id="res-author-avatar" class="author-avatar">
+              <div class="author-details">
+                <h3 id="res-author-name">Creator Name</h3>
+                <span class="author-handle" id="res-author-handle">@username</span>
+              </div>
+              <a href="#" target="_blank" rel="noopener noreferrer" class="btn-view-tiktok" id="btn-view-tiktok">
+                <i class="fa-brands fa-tiktok"></i> Open TikTok
+              </a>
+            </div>
+
+            <!-- Video Title / Caption -->
+            <p class="video-caption" id="res-video-caption">Video caption here...</p>
+
+            <!-- Video Metrics / Stats -->
+            <div class="stats-grid">
+              <div class="stat-item">
+                <i class="fa-solid fa-play"></i>
+                <span class="stat-value" id="res-stat-views">0</span>
+                <span class="stat-name">Views</span>
+              </div>
+              <div class="stat-item">
+                <i class="fa-solid fa-heart"></i>
+                <span class="stat-value" id="res-stat-likes">0</span>
+                <span class="stat-name">Likes</span>
+              </div>
+              <div class="stat-item">
+                <i class="fa-solid fa-comment"></i>
+                <span class="stat-value" id="res-stat-comments">0</span>
+                <span class="stat-name">Comments</span>
+              </div>
+              <div class="stat-item">
+                <i class="fa-solid fa-share"></i>
+                <span class="stat-value" id="res-stat-shares">0</span>
+                <span class="stat-name">Shares</span>
+              </div>
+            </div>
+
+            <!-- Quality Selector & Download Actions -->
+            <div class="download-actions">
+              <div class="download-heading-row">
+                <h4 class="download-heading"><i class="fa-solid fa-sliders"></i> ជ្រើសរើសកំរិតគុណភាព / Select Quality:</h4>
+                <div class="vip-status-indicator" id="vip-status-indicator">
+                  <span class="badge badge-4k-locked" id="badge-4k-status"><i class="fa-solid fa-crown"></i> 4K VIP: <strong>$0.50</strong></span>
+                </div>
+              </div>
+
+              <!-- Quality Selector Pills -->
+              <div class="quality-selector-pills" id="quality-selector-pills">
+                <button type="button" class="q-pill" data-quality="sd" id="q-pill-sd">
+                  <div class="q-pill-top">
+                    <span class="q-pill-res">HD 720p</span>
+                    <span class="q-pill-price free">Free</span>
+                  </div>
+                  <span class="q-pill-sub">Standard HD (Fast)</span>
+                </button>
+
+                <button type="button" class="q-pill active" data-quality="hd" id="q-pill-hd">
+                  <div class="q-pill-top">
+                    <span class="q-pill-res">Full HD 1080p</span>
+                    <span class="q-pill-price free">Free</span>
+                  </div>
+                  <span class="q-pill-sub">Original Best Quality</span>
+                </button>
+
+                <button type="button" class="q-pill q-pill-vip" data-quality="4k" id="q-pill-4k">
+                  <div class="q-pill-top">
+                    <span class="q-pill-res"><i class="fa-solid fa-crown"></i> Ultra 4K</span>
+                    <span class="q-pill-price vip">$0.50</span>
+                  </div>
+                  <span class="q-pill-sub">2160p 60FPS (VIP)</span>
+                </button>
+              </div>
+
+              <!-- Main Quality Download Buttons -->
+              <div class="download-buttons-list">
+                <!-- 4K Ultra HD (VIP $0.50) -->
+                <button class="dl-btn dl-btn-4k" id="dl-btn-4k">
+                  <div class="dl-icon"><i class="fa-solid fa-crown"></i></div>
+                  <div class="dl-details">
+                    <span class="dl-title">Download Ultra 4K (2160p) <span class="tag-badge-gold">👑 VIP $0.50</span></span>
+                    <span class="dl-subtitle" id="dl-4k-desc">Ultra High Bitrate UHD 60FPS • Lossless Audio (ត្រឹមតែ $0.50 - ទាក់ទង Admin)</span>
+                  </div>
+                  <div class="dl-action-status" id="dl-4k-status-icon"><i class="fa-solid fa-lock"></i></div>
+                </button>
+
+                <!-- Full HD 1080p (No Watermark - Free) -->
+                <button class="dl-btn dl-btn-hd active-border" id="dl-btn-hd">
+                  <div class="dl-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                  <div class="dl-details">
+                    <span class="dl-title">Download Full HD 1080p <span class="tag-badge">Free / ឥតគិតថ្លៃ</span></span>
+                    <span class="dl-subtitle" id="dl-hd-size">Best Quality (Original 1080p/720p No Watermark)</span>
+                  </div>
+                  <div class="dl-action-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                </button>
+
+                <!-- Standard HD 720p (No Watermark - Free) -->
+                <button class="dl-btn dl-btn-sd" id="dl-btn-sd">
+                  <div class="dl-icon"><i class="fa-solid fa-video"></i></div>
+                  <div class="dl-details">
+                    <span class="dl-title">Download HD 720p <span class="tag-badge-sub">Free / ឥតគិតថ្លៃ</span></span>
+                    <span class="dl-subtitle" id="dl-sd-size">Fast download, smaller file size</span>
+                  </div>
+                  <div class="dl-action-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                </button>
+              </div>
+
+              <!-- Secondary Row: Audio (MP3) & Cover Image -->
+              <div class="download-secondary-row">
+                <button class="dl-btn dl-btn-mp3" id="dl-btn-mp3">
+                  <div class="dl-icon"><i class="fa-solid fa-file-audio"></i></div>
+                  <div class="dl-details">
+                    <span class="dl-title">Download Audio (MP3)</span>
+                    <span class="dl-subtitle">Extract original sound track</span>
+                  </div>
+                  <div class="dl-action-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                </button>
+
+                <button class="dl-btn dl-btn-cover" id="dl-btn-cover">
+                  <div class="dl-icon"><i class="fa-solid fa-image"></i></div>
+                  <div class="dl-details">
+                    <span class="dl-title">Download Cover Image</span>
+                    <span class="dl-subtitle">Original thumbnail</span>
+                  </div>
+                  <div class="dl-action-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Additional options bar -->
+            <div class="action-footer">
+              <button class="btn-secondary" id="btn-copy-link">
+                <i class="fa-solid fa-copy"></i> Copy Clean Link
+              </button>
+              <button class="btn-secondary" id="btn-new-search">
+                <i class="fa-solid fa-arrows-rotate"></i> Download Another
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Cards -->
+      <section class="features-section">
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <h3>100% Watermark Free</h3>
+          <p>Clean video files without the bouncing TikTok watermark or ending outro logo.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fa-solid fa-film"></i></div>
+          <h3>Full HD 1080p Resolution</h3>
+          <p>Extracts the highest bitrate and maximum native resolution provided by the creator.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fa-solid fa-music"></i></div>
+          <h3>Studio MP3 Audio</h3>
+          <p>Convert and download TikTok background tracks, sounds, and voices in crystal clear audio.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fa-solid fa-infinity"></i></div>
+          <h3>Unlimited & Fast</h3>
+          <p>No limits, no registration, no software installation required. Direct streaming download.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- PROFILE VIDEOS DOWNLOADER TAB -->
+    <main class="tab-content" id="tab-profile" style="display: none;">
+      <section class="profile-search-section">
+        <div class="input-card">
+          <div class="input-wrapper">
+            <i class="fa-solid fa-user-tag input-icon"></i>
+            <input 
+              type="text" 
+              id="profile-url-input" 
+              placeholder="Paste TikTok Profile link or @username (e.g. https://www.tiktok.com/@zachking or @khaby.lame)" 
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button type="button" class="btn-paste" id="btn-profile-paste" title="Paste from clipboard">
+              <i class="fa-regular fa-paste"></i> <span>Paste</span>
+            </button>
+            <button type="button" class="btn-clear" id="btn-profile-clear" title="Clear input" style="display: none;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="btn-primary" id="btn-profile-fetch">
+            <span class="btn-text"><i class="fa-solid fa-magnifying-glass"></i> Load Profile Videos</span>
+            <span class="btn-spinner" style="display: none;"><i class="fa-solid fa-circle-notch fa-spin"></i> Scraping Profile...</span>
+          </button>
+        </div>
+
+        <div class="quick-examples">
+          <span class="label">Try sample profile:</span>
+          <button class="profile-sample-link" data-user="zachking">@zachking (Zach King)</button>
+          <button class="profile-sample-link" data-user="khaby.lame">@khaby.lame (Khaby Lame)</button>
+        </div>
+
+        <!-- Profile Error Banner -->
+        <div class="error-banner" id="profile-error-banner" style="display: none;">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="profile-error-message">Error fetching profile</span>
+          <button class="error-close" id="profile-error-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </section>
+
+      <!-- Profile Results Container -->
+      <section class="profile-results-container" id="profile-results-container" style="display: none;">
+        <!-- Creator Info Card -->
+        <div class="creator-profile-card" id="creator-profile-card">
+          <img src="" alt="Avatar" id="prof-author-avatar" class="creator-avatar">
+          <div class="creator-profile-info">
+            <div class="creator-title-row">
+              <h3 id="prof-author-nickname">Creator Name</h3>
+              <span class="creator-handle" id="prof-author-handle">@username</span>
+            </div>
+            <p class="creator-bio" id="prof-author-bio">Creator bio description</p>
+            <div class="creator-stats-row">
+              <div class="creator-stat"><span class="cstat-num" id="prof-stat-followers">0</span> <span class="cstat-label">Followers</span></div>
+              <div class="creator-stat"><span class="cstat-num" id="prof-stat-likes">0</span> <span class="cstat-label">Likes</span></div>
+              <div class="creator-stat"><span class="cstat-num" id="prof-stat-videos">0</span> <span class="cstat-label">Videos Loaded</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar & Video Grid -->
+        <div class="profile-grid-section">
+          <div class="batch-results-header">
+            <div class="batch-header-title">
+              <h4>All Profile Videos (<span id="prof-selected-count">0</span>/<span id="prof-total-count">0</span> Selected)</h4>
+              <label class="select-all-wrap">
+                <input type="checkbox" id="chk-prof-select-all" checked> <span>Select All</span>
+              </label>
+            </div>
+            <div class="batch-header-actions">
+              <div class="quality-select-wrap">
+                <label for="prof-quality-select"><i class="fa-solid fa-sliders"></i> Quality:</label>
+                <select id="prof-quality-select" class="batch-quality-select">
+                  <option value="fullhd">Full HD 1080p (Free)</option>
+                  <option value="hd">HD 720p (Free)</option>
+                  <option value="4k">👑 Ultra 4K (VIP $0.50)</option>
+                </select>
+              </div>
+              <button class="btn-sm-secondary" id="btn-prof-download-mp3">
+                <i class="fa-solid fa-music"></i> Selected MP3s
+              </button>
+              <button class="btn-sm-primary" id="btn-prof-download-all">
+                <i class="fa-solid fa-download"></i> Download Selected
+              </button>
+            </div>
+          </div>
+
+          <div class="batch-grid" id="prof-video-grid"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- PLAYLIST & BATCH DOWNLOADER TAB -->
+    <main class="tab-content" id="tab-batch" style="display: none;">
+      <section class="batch-section">
+        <div class="batch-input-card">
+          <div class="batch-header">
+            <h3><i class="fa-solid fa-list-check"></i> Playlist & Batch Downloader</h3>
+            <p>Paste multiple TikTok video URLs (one per line, up to 15 links at once) to download the whole playlist.</p>
+          </div>
+          <textarea 
+            id="batch-urls-input" 
+            rows="6" 
+            placeholder="https://www.tiktok.com/@zachking/video/6768504823336815877&#10;https://vt.tiktok.com/ZS27Yv5Hq/"
+          ></textarea>
+          
+          <div class="batch-quick-row">
+            <button type="button" class="sample-link" id="btn-sample-playlist"><i class="fa-solid fa-wand-magic-sparkles"></i> Load Sample Playlist</button>
+          </div>
+
+          <div class="batch-actions">
+            <button class="btn-secondary" id="btn-batch-paste"><i class="fa-regular fa-paste"></i> Paste Links</button>
+            <button class="btn-secondary" id="btn-batch-clear"><i class="fa-solid fa-trash"></i> Clear</button>
+            <button class="btn-primary" id="btn-batch-process">
+              <span class="btn-text"><i class="fa-solid fa-bolt"></i> Load Playlist Videos</span>
+              <span class="btn-spinner" style="display: none;"><i class="fa-solid fa-circle-notch fa-spin"></i> Processing Playlist...</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Extraction Progress Bar -->
+        <div class="batch-progress-card" id="batch-progress-card" style="display: none;">
+          <div class="progress-labels">
+            <span id="batch-progress-text">Analyzing videos...</span>
+            <span id="batch-progress-pct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="batch-progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="batch-results" id="batch-results-container" style="display: none;">
+          <div class="batch-results-header">
+            <div class="batch-header-title">
+              <h4>Playlist Videos (<span id="batch-success-count">0</span>/<span id="batch-total-count">0</span>)</h4>
+              <label class="select-all-wrap">
+                <input type="checkbox" id="chk-select-all" checked> <span>Select All</span>
+              </label>
+            </div>
+            <div class="batch-header-actions">
+              <div class="quality-select-wrap">
+                <label for="batch-quality-select"><i class="fa-solid fa-sliders"></i> Quality:</label>
+                <select id="batch-quality-select" class="batch-quality-select">
+                  <option value="fullhd">Full HD 1080p (Free)</option>
+                  <option value="hd">HD 720p (Free)</option>
+                  <option value="4k">👑 Ultra 4K (VIP $0.50)</option>
+                </select>
+              </div>
+              <button class="btn-sm-secondary" id="btn-batch-download-mp3">
+                <i class="fa-solid fa-music"></i> Selected MP3s
+              </button>
+              <button class="btn-sm-primary" id="btn-batch-download-all">
+                <i class="fa-solid fa-download"></i> Download Selected
+              </button>
+            </div>
+          </div>
+          <div class="batch-grid" id="batch-grid"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- HISTORY TAB -->
+    <main class="tab-content" id="tab-history" style="display: none;">
+      <section class="history-section">
+        <div class="history-header">
+          <h3><i class="fa-solid fa-clock-rotate-left"></i> Download History</h3>
+          <button class="btn-secondary" id="btn-clear-history"><i class="fa-solid fa-trash-can"></i> Clear History</button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="empty-state" id="history-empty">
+            <i class="fa-solid fa-folder-open"></i>
+            <p>No downloads yet. Videos you analyze will show up here for quick re-downloading.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <p>TikTok HD Downloader • Fast, Free & No Watermark</p>
+      <p class="disclaimer">This tool is not affiliated with, endorsed, or sponsored by TikTok or ByteDance.</p>
+    </footer>
+  </div>
+
+  <!-- 4K VIP Paywall & Admin Contact Modal -->
+  <div class="modal-overlay" id="modal-4k-vip" style="display: none;">
+    <div class="modal-card modal-vip">
+      <button class="modal-close" id="modal-vip-close" title="Close"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div class="vip-modal-header">
+        <div class="vip-crown-badge">
+          <i class="fa-solid fa-crown"></i>
+        </div>
+        <h2>ដោះសោកំរិត 4K Ultra HD</h2>
+        <p class="vip-subtitle">Unlock 4K (2160p) Ultra HD Video Quality • No Watermark</p>
+      </div>
+
+      <div class="vip-pricing-card">
+        <div class="pricing-glow"></div>
+        <div class="pricing-label"><i class="fa-solid fa-sparkles"></i> តម្លៃពិសេស / VIP Price</div>
+        <div class="pricing-amount">
+          <span class="currency">$</span><span id="vip-price-num">0.5</span><span class="currency-sub"> / វិដេអូ (ឬកញ្ចប់ VIP)</span>
+        </div>
+        <div class="pricing-note">
+          <i class="fa-solid fa-circle-check"></i> ត្រឹមតែ <strong>$0.50</strong> ប៉ុណ្ណោះ! សូមទាក់ទង Admin ដើម្បីដោះសោរ (Unlock)
+        </div>
+      </div>
+
+      <div class="vip-features-grid">
+        <div class="vip-feat-item">
+          <div class="vip-feat-icon"><i class="fa-solid fa-gem"></i></div>
+          <div class="vip-feat-text">
+            <strong>Ultra 4K UHD (2160p)</strong>
+            <span>កំរិតច្បាស់ត្រជាក់ភ្នែក 60 FPS Crystal Clear</span>
+          </div>
+        </div>
+        <div class="vip-feat-item">
+          <div class="vip-feat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div class="vip-feat-text">
+            <strong>100% No Watermark</strong>
+            <span>គ្មានជាប់ Logo TikTok និង Outro ដាច់ខាត</span>
+          </div>
+        </div>
+        <div class="vip-feat-item">
+          <div class="vip-feat-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="vip-feat-text">
+            <strong>High Bitrate 60+ Mbps</strong>
+            <span>រូបភាពម៉ត់ខៃ រស់រវើក មិនបែកគ្រាប់</span>
+          </div>
+        </div>
+        <div class="vip-feat-item">
+          <div class="vip-feat-icon"><i class="fa-solid fa-headphones"></i></div>
+          <div class="vip-feat-text">
+            <strong>Lossless 320kbps Audio</strong>
+            <span>សម្លេង Original MP3 កំរិត Studio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact & Payment Section with QR Codes -->
+      <div class="admin-contact-section">
+        <div class="qr-tab-switcher">
+          <button type="button" class="qr-tab-btn active" id="qr-tab-aba" data-target="qr-pane-aba">
+            <i class="fa-solid fa-qrcode"></i> ABA KHQR ($0.50)
+          </button>
+          <button type="button" class="qr-tab-btn" id="qr-tab-telegram" data-target="qr-pane-telegram">
+            <i class="fa-brands fa-telegram"></i> Telegram (@vannakbo)
+          </button>
+        </div>
+
+        <!-- ABA QR Pane -->
+        <div class="qr-pane active" id="qr-pane-aba">
+          <div class="qr-card-layout">
+            <div class="qr-image-wrapper aba-border">
+              <img src="images/aba_qr.png" alt="ABA KHQR Payment" id="img-aba-qr" class="qr-display-img">
+              <span class="qr-badge-overlay"><i class="fa-solid fa-shield-halved"></i> ABA KHQR Verified</span>
+            </div>
+            <div class="qr-info-details">
+              <div class="qr-header-title">
+                <span class="qr-pill-label">ABA BANK KHQR</span>
+                <h4>ស្កេនបង់ប្រាក់ $0.50 (២,០០០៛)</h4>
+              </div>
+
+              <div class="qr-account-box">
+                <div class="qr-acc-row">
+                  <span class="acc-label">ឈ្មោះគណនី / Name:</span>
+                  <strong class="acc-val" id="disp-aba-name">VANNAK BO</strong>
+                </div>
+                <div class="qr-acc-row">
+                  <span class="acc-label">គណនី USD ($):</span>
+                  <strong class="acc-val" id="disp-aba-usd">003 868 515</strong>
+                  <button type="button" class="btn-copy-mini" id="btn-copy-usd" title="ចម្លងលេខ USD"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                <div class="qr-acc-row">
+                  <span class="acc-label">គណនី KHR (៛):</span>
+                  <strong class="acc-val" id="disp-aba-khr">001 650 942</strong>
+                  <button type="button" class="btn-copy-mini" id="btn-copy-khr" title="ចម្លងលេខ KHR"><i class="fa-regular fa-copy"></i></button>
+                </div>
+              </div>
+
+              <div class="qr-action-buttons">
+                <a href="https://pay.ababank.com/oRF8/2iq9b380" target="_blank" rel="noopener noreferrer" class="btn-aba-pay-direct" id="btn-aba-pay-link">
+                  <i class="fa-solid fa-mobile-screen-button"></i> បើកក្នុង ABA App (Pay Link)
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telegram QR Pane -->
+        <div class="qr-pane" id="qr-pane-telegram" style="display: none;">
+          <div class="qr-card-layout">
+            <div class="qr-image-wrapper tg-border">
+              <img src="images/telegram_qr.png" alt="Telegram QR" id="img-tg-qr" class="qr-display-img">
+              <span class="qr-badge-overlay tg"><i class="fa-brands fa-telegram"></i> Telegram QR</span>
+            </div>
+            <div class="qr-info-details">
+              <div class="qr-header-title">
+                <span class="qr-pill-label tg">TELEGRAM CONTACT</span>
+                <h4>ឆាតទាក់ទង Admin</h4>
+              </div>
+
+              <p class="tg-instruction">
+                ក្រោយពីបង់ប្រាក់ <strong>$0.50</strong> រួចរាល់ សូមផ្ញើវិក្កយបត្រ (Receipt) ទៅកាន់ Telegram Admin <strong>@vannakbo</strong> ដើម្បីទទួលបានកូដសម្ងាត់សម្រាប់ដោះសោកំរិត 4K ភ្លាមៗ!
+              </p>
+
+              <div class="qr-action-buttons">
+                <a href="https://t.me/vannakbo" target="_blank" rel="noopener noreferrer" class="btn-admin-telegram" id="btn-admin-telegram">
+                  <i class="fa-brands fa-telegram"></i>
+                  <div class="btn-admin-text">
+                    <span class="btn-sub">ឆាតផ្ទាល់ Telegram:</span>
+                    <span class="btn-main" id="admin-telegram-display">@vannakbo</span>
+                  </div>
+                  <i class="fa-solid fa-arrow-up-right-from-square admin-arrow-icon"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIP Code Unlock Form -->
+      <div class="vip-code-section">
+        <label for="vip-code-input"><i class="fa-solid fa-key"></i> បញ្ចូលកូដ VIP (បើអ្នកមានកូដពី Admin):</label>
+        <div class="vip-code-wrapper">
+          <input type="text" id="vip-code-input" placeholder="ឧទាហរណ៍៖ VIP4K..." autocomplete="off">
+          <button type="button" class="btn-vip-unlock" id="btn-vip-unlock">
+            <i class="fa-solid fa-unlock"></i> ដោះសោរ
+          </button>
+        </div>
+        <p class="vip-code-hint">💡 ជំនួយ៖ បន្ទាប់ពីផ្ញើវិក្កយបត្រតាម Telegram Admin នឹងផ្ញើកូដសម្ងាត់សម្រាប់ Unlock ជូនអ្នកភ្លាមៗ!</p>
+      </div>
+
+      <!-- Footer & Admin Config Toggle -->
+      <div class="vip-modal-footer">
+        <button type="button" class="btn-admin-config" id="btn-open-admin-config" title="Admin Settings">
+          <i class="fa-solid fa-gear"></i> កំណត់ព័ត៌មាន Admin
+        </button>
+        <button type="button" class="btn-secondary btn-vip-cancel" id="btn-vip-cancel">
+          បិទ (Close)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Settings Modal (For app owner to set contact info & unlock codes) -->
+  <div class="modal-overlay" id="modal-admin-config" style="display: none;">
+    <div class="modal-card modal-config">
+      <button class="modal-close" id="modal-config-close" title="Close"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div class="config-header">
+        <div class="config-icon-wrap"><i class="fa-solid fa-sliders"></i></div>
+        <div>
+          <h3>កំណត់ព័ត៌មាន Admin (Settings)</h3>
+          <p class="config-desc">កំណត់ព័ត៌មាន Telegram, ABA Pay link, និងកូដដោះសោរ VIP សម្រាប់អតិថិជនរបស់អ្នក។</p>
+        </div>
+      </div>
+
+      <div class="config-form">
+        <div class="config-field">
+          <label><i class="fa-brands fa-telegram"></i> Telegram Username ឬ Chat Link:</label>
+          <input type="text" id="cfg-telegram" placeholder="@vannakbo ឬ https://t.me/vannakbo">
+        </div>
+
+        <div class="config-field">
+          <label><i class="fa-solid fa-link"></i> ABA Pay Link (KHQR):</label>
+          <input type="text" id="cfg-pay-link" placeholder="https://pay.ababank.com/oRF8/2iq9b380">
+        </div>
+
+        <div class="config-field">
+          <label><i class="fa-solid fa-phone"></i> លេខទូរស័ព្ទ / គណនី ABA:</label>
+          <input type="text" id="cfg-phone" placeholder="USD: 003 868 515 / KHR: 001 650 942">
+        </div>
+
+        <div class="config-field">
+          <label><i class="fa-solid fa-tag"></i> តម្លៃ 4K (Price Display):</label>
+          <input type="text" id="cfg-price" placeholder="0.5">
+        </div>
+
+        <div class="config-field">
+          <label><i class="fa-solid fa-key"></i> កូដដោះសោរ VIP (VIP Secret Unlock Code):</label>
+          <input type="text" id="cfg-code" placeholder="VIP4K">
+        </div>
+
+        <div class="config-actions">
+          <button type="button" class="btn-secondary" id="btn-cfg-reset">កំណត់ដើមវិញ (Reset)</button>
+          <button type="button" class="btn-primary" id="btn-cfg-save"><i class="fa-solid fa-check"></i> រក្សាទុក (Save)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check toast-icon"></i>
+    <span class="toast-message" id="toast-message">Copied to clipboard!</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
